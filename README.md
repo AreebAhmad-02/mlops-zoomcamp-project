@@ -111,3 +111,88 @@ NB Your local install/environment might require starting prefect server before r
 
 ![MLFlow experiments training churn model](/screenshots/mlflow-experiments-2.png)
 
+
+#### Prefect orchestration
+
+Prefect workflow is located in `orchestrate.py`.
+It trains 3 classifiers - DecisionTree, RandomForest and XGBoost. DecisionTree is very fast end quite effective, the others require more time, so I disabled them for your convenience:
+```
+    for classifier in [
+        'DecisionTreeClassifier',
+        # 'RandomForestClassifier',
+        # 'XGBClassifier',
+    ]:
+```
+Feel free to uncomment and test in full.
+
+![Prefect orchestration](/screenshots/prefect-runs.png)
+
+Full training includes 9 experiments - 3 classifiers x 3 estimators, and ability to set ranges for other hyper parameters.
+Inside the experiment (`train_model()` in `train_model.py`) are more specific hyper parameners for the classifiers.
+
+### Test prediction service
+
+Integration test is very similar to deployment.
+Test parameters are set in `test.env` file, including settings for AWS account and S3 bucket. You need to set them correctly for your deployment, otherwise it work with localstack emulation of AWS S3 service.
+
+Run `bash test-service.sh` or go to `prediction_service` directory and run `bash test-run.sh`.
+This will
+- copy best model and latest scripts,
+- build docker image,
+- run it, and
+- run `test-api.py` to execute requests to the web service.
+Finally docker container will be stopped.
+
+![Testing prediction service in dockerl](/screenshots/prediction-service-test-1.png)
+
+![Testing prediction service in dockerl](/screenshots/prediction-service-test-dataset-1.png)
+
+Advanced testing can be executed by running `docker compose up --build` in `prediction_service` (check `docker-compose.yaml` settings - MongoDB, Localstack).
+
+### Deployment and Monitoring
+
+To deploy web service set your parameters in `test.env` file, then run `bash deploy-service.sh`.
+
+Monitoring is made by storing requests and predictions in MongoDb database, then using WhyLogs (`data-drift-test.py`) to check data/prediction drift [example](/screenshots/example2.html).
+
+### Best practices
+
+    * [x] Unit tests
+    * [x] Integration test (== Test prediction service)
+    * [x] Code formatter (isort, black)
+    * [x] Makefile
+    * [x] Pre-commit hooks
+    * [x] Github workflow for testing on push/pull request
+
+
+## Current results of training
+
+By using 3 classifiers and tuning different hyper parameters I managed to achive 99% accuracy for dataset 1.
+The best results achieved by using XGBClassifier.
+To be honest I was surprised how those hyperparameters affect prediction accuracy! You have very low chances to find optimal combination just by playing with Jupyter notebooks - MLFlow rules!
+Another surprise is that DecisionTreeClassifier can be quite close in accuracy with much faster execution! Of course, it depends on dataset.
+
+![Trained churn model: results](/screenshots/prediction-accuracy-dataset1.png)
+
+You can find additional information which parameners result better performance on [screenshots](/screenshots).
+
+As I mentioned, I experimented with 2 datasets, and made web service flexible enough to
+
+- recognize change of dataset and redirect to respective model prediction
+- update model files from S3 bucket, making possible to monitor data, retrain model and command service to 'upgrade' without restarting the service.
+- check service parameters by /status request (check `app.py`)
+
+That was fun!
+
+## Next steps
+
+What's interesting about churn prediction? I found another dataset - new experiments ahead!
+
+
+## Support
+
+🙏 Thank you for your attention and time!
+
+- If you experience any issue while following this instruction (or something left unclear), please add it to [Issues](/issues), I'll be glad to help/fix. And your feedback, questions & suggestions are welcome as well!
+- Feel free to fork and submit pull requests.
+
