@@ -1,3 +1,4 @@
+**NOTE:For anyone who is reviewing the project you will see that my project is recently uploaded that is because I had previously done the project but forgot to make a proper repo as I was learning it with a friend and it was his repository so I copied from there to my repo. Also By mistake I in the form I have submiited wrong hash by mistake please consider latest commit to review please.** 
 # MLOps project Training and Deployment of Churn prediction model
 
 This project demonstrates a comprehensive machine learning operations (MLOps) workflow designed to build, train, deploy, and monitor a churn prediction model. It was developed as part of my learning journey through the DataTalksClub MLOps ZoomCamp 2025
