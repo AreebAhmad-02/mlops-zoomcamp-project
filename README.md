@@ -1,0 +1,113 @@
+# MLOps project Training and Deployment of Churn prediction model
+
+This project demonstrates a comprehensive machine learning operations (MLOps) workflow designed to build, train, deploy, and monitor a churn prediction model. It was developed as part of my learning journey through the DataTalksClub MLOps ZoomCamp 2025
+
+
+<!-- ![MLOps project Churn prediction](/screenshots/mlops-churn-prediction.png) -->
+
+Several models trained and optimized on 2 Churn datasets
+1. [Ecommerce Customer Churn Analysis and Prediction](https://www.kaggle.com/datasets/ankitverma2010/ecommerce-customer-churn-analysis-and-prediction/data)
+2. [DQLab Telco Final](https://www.kaggle.com/datasets/samran98/customer-churn-telco-final/data)
+
+3 classifiers used for prediction (known as effective for churn prediction):
+- DecisionTreeClassifier
+- RandomForestClassifier
+- XGBClassifier
+
+Project can be tested and deployed in cloud virtual machine (AWS, Azure, GCP), **GitHub CodeSpaces** (the easiest option, and free), or locally (GPU is not required).
+
+
+
+## 💼 Problem statement/Business Context
+
+This project was personally inspired by my uncle, who runs a shop. Over the years, I noticed that some regular customers stopped visiting — sometimes without any clear reason. My uncle would occasionally wonder what went wrong and how he could have kept them coming back. That simple, real-world observation sparked my curiosity about customer behavior and retention.
+
+In the broader business world, this challenge is even more pronounced. According to Harvard Business Review, acquiring a new customer can cost 5 to 25 times more than retaining an existing one. Furthermore, increasing customer retention by just 5% can boost profits by 25% to 95%.
+
+Whether it's a small neighborhood store or a large subscription-based company, understanding why customers leave — and predicting it ahead of time — is incredibly valuable. This project uses machine learning to predict customer churn and gives businesses, like my dad’s shop, the opportunity to take proactive steps to retain valuable customers.
+
+## 🎯 Goals
+
+This is my 1st MLOps project started during [MLOps ZoomCamp](https://github.com/DataTalksClub/mlops-zoomcamp)'25.
+
+The **primary objective** is to develop a production-grade MLOps pipeline that supports:
+- choose dataset
+- Dataset ingestion and preprocessing
+- Model training and evaluation
+- create a model training pipeline
+- Automated pipeline orchestration
+- Web service deployment of trained models
+- Model performance tracking and monitoring
+*And ofc follow MLOps best practices!*
+
+I found a Churn dataset [Ecommerce Customer Churn](https://www.kaggle.com/datasets/ankitverma2010/ecommerce-customer-churn-analysis-and-prediction/data) on Kaggle, analyzed and experimented with different classification models. And I was surprised how hyper parameter optimization could improve results!
+I was curious enough to find another churn dataset to experiment with it as well. It has a different set of features (only few are similar, like tenure, gender). As a result I managed to build more or less universal pipeline for this task that can easily switch datasets, and I learned a lot while making it possible.
+
+Thanks to MLOps ZoomCamp for the reason to learn many new tools!
+
+## :toolbox: Tech stack
+
+- MLFlow for ML experiment tracking
+- Prefect for ML workflow orchestration
+- Docker and docker-compose
+- Localstack as AWS S3 service emulation for development
+- Flask for web application
+- MongoDB + WhyLogs for performance monitoring
+
+## 🚀 Instructions to reproduce
+
+- [Setup environment](#hammer_and_wrench-setup-environment)
+- [Dataset](#arrow_heading_down-dataset)
+- [Train model](#train-model)
+- [Test prediction service](#test-prediction-service)
+- [Deployment and Monitoring](#deployment-and-monitoring)
+- [Best practices](#best-practices)
+
+### :hammer_and_wrench: Setup environment
+
+#### Github CodeSpaces
+
+1. Fork this repo on GitHub.
+2. Create GitHub CodeSpace from the repo, **Start CodeSpace**
+3. Run `pip install -r requirements.txt` to install required packages.
+4. If you want to play with/develop the project, you can also install `pipenv run pre-commit install` to format code before committing to repo.
+
+#### Virtual machine (AWS, Azure, GCP)
+
+- Create virtual machine
+- Clone repositoty, `cd MLOps-churn`
+- steps 3. and 4. from above
+    
+
+#### Local machine (Linux)
+
+- Clone repositoty, `cd MLOps-churn`
+- steps 3. and 4. from above
+🐍 Compatible with Python 3.11 / 3.12. If you're facing conflicts, create a virtualenv or use CodeSpaces
+NB Tested with python 3.11 and 3.12. As packages versions might conflict with yours, Github CodeSpaces could be a good solution. Or you can just create a new virtual environment using `python -m venv mlopsenv` and then `source mlopsenv/bin/activate`, or by using `pipenv install`.
+
+### :arrow_heading_down: Dataset
+
+Dataset files are small enough, included in repo. Located in `./train_model/data/` directory.
+You can switch dataset in `train_model/settings.py`, as well as paths and other parameters.
+Data preprocessing includes removing some unuseful columns, fixing missing values and encoding categorical columns. Encoders are different for each dataset as columns set differs, so stored in separate directories (with models).
+
+![Dataset details](/screenshots/dataset-info-1.png)
+
+For more info check out [Jupyter notebook](/EDA/churn_prediction_EDA.ipynb)
+
+### Train model
+
+Run `bash run-train-model.sh` or go to `train_model` directory and run `python orchestrate.py`.
+This will start Prefect workflow to
+- load training data (dataset 1 or 2 according to `settings.py`), training encoder
+- call `run_experiment()` with different hyper parameters and showing accuracy results (dataset is split - train, test)
+- call `run_register_model()` to register the best model, which will be saved to `./model` sub-directory (1 or 2)
+- call `test_model()` to verify accuracy on the whole dataset
+
+To explore results go to `train_model` directory and run `mlflow server`.
+
+NB Your local install/environment might require starting prefect server before running `bash run-train-model.sh`, you can do it by `prefect server start`.
+
+![MLFlow experiments training churn model](/screenshots/mlflow-experiments-2.png)
+
